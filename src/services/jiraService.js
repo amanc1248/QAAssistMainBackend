@@ -3,10 +3,7 @@ const JiraClient = require('jira-client');
 const { getAIResponse } = require("./aiservice");
 require('dotenv').config();
 
-// GitHub API setup
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
-});
+
 const jira = new JiraClient({
   protocol: 'https',
   host: process.env.JIRA_HOST,
@@ -15,7 +12,15 @@ const jira = new JiraClient({
   apiVersion: '3',
   strictSSL: true
 });
-
+const fetchReleaseData = async(releaseVersion)=>{
+  try {
+    const data = await jira.findIssue("AO-2");
+    return data;
+  } catch (error) {
+    console.error(error);
+    return; 
+  }
+}
 const fetchJiraData = async (releaseVersion) => {
   try {
     const data = await jira.findIssue("AO-2");
@@ -106,7 +111,21 @@ Error: Returns a 400 status with the error message.`
     throw error;
   }
 };
+const fetchReleasesService = async () => {
+  try {
+      const releases = await jira.getVersions(process.env.JIRA_PROJECT_KEY);
 
+      // Sort releases by releaseDate in descending order
+      const sortedReleases = releases.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
+
+      return sortedReleases;
+  } catch (error) {
+      console.error('Error fetching releases from JIRA:', error);
+      throw new Error('Failed to fetch releases');
+  }
+};
 module.exports = {
-  fetchJiraData
+  fetchJiraData,
+  fetchReleasesService,
+  fetchReleaseData,
 }; 

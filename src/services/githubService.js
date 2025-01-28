@@ -47,6 +47,21 @@ const fetchGithubData = async (releaseVersion) => {
   }
 };
 
+const getPullRequestFileChanges = async()=>{
+  try {
+    const { data: pullRequests } = await octokit.rest.pulls.list({
+      owner: 'amanc1248',
+      repo: 'QA-Feature-Test',
+      per_page: 100,
+      state: 'all', // or 'open' for open PRs only
+      q: "A0-2", // Searching for the ticket key in PR titles
+    });
+    return pullRequests;
+  } catch (error) {
+    console.error(error);
+  }
+}
 module.exports = {
-  fetchGithubData
+  fetchGithubData,
+  getPullRequestFileChanges,
 }; 
